@@ -77,6 +77,9 @@ const loginUser = async (req, res) => {
         message: "User not found",
       });
     }
+    console.log("Email:", email);
+console.log("Entered Password:", password);
+console.log("Stored Password:", user.password);
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);

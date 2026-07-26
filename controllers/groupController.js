@@ -1,4 +1,5 @@
 const Group = require("../models/Group");
+const User = require("../models/User");
 
 // Create Group
 const createGroup = async (req, res) => {
@@ -70,8 +71,110 @@ const joinGroup = async (req, res) => {
     });
   }
 };
+const addMemberByEmail = async (req, res) => {
+  try {
+    const { groupId, email } = req.body;
+
+    if (!groupId || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Group ID and Email are required",
+      });
+    }
+
+    // Find the user
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // Check if already a member
+    if (group.members.includes(user._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already a member",
+      });
+    }
+
+    group.members.push(user._id);
+    await group.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Member added successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+// Get My Groups
+const getGroups = async (req, res) => {
+  try {
+    const groups = await Group.find({
+      members: req.user.id,
+    });
+
+    res.status(200).json({
+      success: true,
+      groups,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+// Get Group By ID
+const getGroupById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const group = await Group.findById(id)
+  .populate("members", "name email")
+  .populate("createdBy", "name");
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      group,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   createGroup,
   joinGroup,
+  getGroups,
+  getGroupById,
+  addMemberByEmail,
 };

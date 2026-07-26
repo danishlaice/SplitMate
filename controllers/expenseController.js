@@ -142,10 +142,69 @@ const deleteExpense = async (req, res) => {
     });
   }
 };
+const calculateBalance = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const group = await Group.findById(groupId).populate("members", "name");
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    const expenses = await Expense.find({ group: groupId }).populate(
+      "paidBy",
+      "name"
+    );
+
+    const totalExpense = expenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0
+    );
+
+    const share = totalExpense / group.members.length;
+
+    const balances = {};
+
+    group.members.forEach((member) => {
+      balances[member._id] = {
+        name: member.name,
+        paid: 0,
+      };
+    });
+
+    expenses.forEach((expense) => {
+      balances[expense.paidBy._id].paid += expense.amount;
+    });
+
+    const result = Object.values(balances).map((member) => ({
+      name: member.name,
+      paid: member.paid,
+      shouldPay: share,
+      balance: member.paid - share,
+    }));
+
+    res.status(200).json({
+      success: true,
+      totalExpense,
+      eachPersonShouldPay: share,
+      balances: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   addExpense,
   getGroupExpenses,
   updateExpense,
   deleteExpense,
+  calculateBalance,
 };
