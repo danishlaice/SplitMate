@@ -206,5 +206,5 @@ module.exports = {
   getGroupExpenses,
   updateExpense,
   deleteExpense,
-  calculateBalance,
+  
 };
