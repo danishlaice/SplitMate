@@ -14,11 +14,20 @@ const createGroup = async (req, res) => {
       });
     }
 
+    // Generate unique invite code
+    const inviteCode = Math.random()
+      .toString(36)
+      .substring(2, 10)
+      .toUpperCase();
+
+      console.log("Generated Invite Code:", inviteCode);
+
     // Create group
     const group = await Group.create({
       name,
       createdBy: req.user.id,
       members: [req.user.id],
+      inviteCode,
     });
 
     res.status(201).json({
@@ -62,6 +71,37 @@ const joinGroup = async (req, res) => {
       success: true,
       message: "Joined Group Successfully",
       group,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const joinByCode = async (req, res) => {
+  try {
+    const { inviteCode } = req.body;
+
+    const group = await Group.findOne({ inviteCode });
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid Invite Code",
+      });
+    }
+
+    if (!group.members.includes(req.user.id)) {
+      group.members.push(req.user.id);
+      await group.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Joined Successfully",
+      groupId: group._id,
     });
 
   } catch (error) {
@@ -170,6 +210,44 @@ const getGroupById = async (req, res) => {
     });
   }
 };
+const joinGroupByCode = async (req, res) => {
+  try {
+    const { inviteCode } = req.body;
+
+    const group = await Group.findOne({ inviteCode });
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid Invite Code",
+      });
+    }
+
+    const alreadyMember = group.members.includes(req.user.id);
+
+    if (alreadyMember) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already a member",
+      });
+    }
+
+    group.members.push(req.user.id);
+
+    await group.save();
+
+    res.json({
+      success: true,
+      message: "Joined Group Successfully",
+      group,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   createGroup,
@@ -177,4 +255,6 @@ module.exports = {
   getGroups,
   getGroupById,
   addMemberByEmail,
+  joinGroupByCode,
+  joinByCode,
 };
