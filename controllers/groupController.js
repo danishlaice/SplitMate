@@ -1,5 +1,6 @@
 const Group = require("../models/Group");
 const User = require("../models/User");
+const Expense = require("../models/Expense");
 
 // Create Group
 const createGroup = async (req, res) => {
@@ -210,6 +211,85 @@ const getGroupById = async (req, res) => {
     });
   }
 };
+const leaveGroup = async (req, res) => {
+  try {
+    const { groupId } = req.body;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // Owner cannot leave
+    if (group.createdBy.toString() === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: "Group owner cannot leave the group.",
+      });
+    }
+
+    // Remove member
+    group.members = group.members.filter(
+      (member) => member.toString() !== req.user.id
+    );
+
+    await group.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Left group successfully.",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const deleteGroup = async (req, res) => {
+  try {
+    const { groupId } = req.body;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // Only owner can delete
+    if (group.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Only group owner can delete this group.",
+      });
+    }
+
+    // Delete all expenses in this group
+    await Expense.deleteMany({ group: groupId });
+
+    // Delete group
+    await Group.findByIdAndDelete(groupId);
+
+    res.status(200).json({
+      success: true,
+      message: "Group deleted successfully.",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 const joinGroupByCode = async (req, res) => {
   try {
     const { inviteCode } = req.body;
@@ -257,4 +337,6 @@ module.exports = {
   addMemberByEmail,
   joinGroupByCode,
   joinByCode,
+  leaveGroup,
+  deleteGroup,
 };
