@@ -191,7 +191,7 @@ const getGroupById = async (req, res) => {
 
     const group = await Group.findById(id)
   .populate("members", "name email")
-  .populate("createdBy", "name");
+  .populate("createdBy", "_id name");
 
     if (!group) {
       return res.status(404).json({
