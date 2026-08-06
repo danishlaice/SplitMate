@@ -1,5 +1,5 @@
 const express = require("express");
-const { createGroup , joinGroup , getGroups , getGroupById , addMemberByEmail , joinGroupByCode , joinByCode , leaveGroup , deleteGroup} = require("../controllers/groupController");
+const { createGroup , joinGroup , getGroups , getGroupById , addMemberByEmail , joinByCode , leaveGroup , deleteGroup} = require("../controllers/groupController");
 const protect = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -15,8 +15,6 @@ router.get("/", protect, getGroups);
 router.get("/:id", protect, getGroupById);
 
 router.post("/add-member", protect, addMemberByEmail);
-
-router.post("/join-by-code", protect, joinGroupByCode);
 
 router.post("/join-by-code", protect, joinByCode);
 

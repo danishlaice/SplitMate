@@ -94,10 +94,17 @@ const joinByCode = async (req, res) => {
       });
     }
 
-    if (!group.members.includes(req.user.id)) {
-      group.members.push(req.user.id);
-      await group.save();
-    }
+    const alreadyMember = group.members.includes(req.user.id);
+
+if (alreadyMember) {
+  return res.status(400).json({
+    success: false,
+    message: "You are already a member",
+  });
+}
+
+group.members.push(req.user.id);
+await group.save();
 
     res.status(200).json({
       success: true,
@@ -290,44 +297,7 @@ const deleteGroup = async (req, res) => {
     });
   }
 };
-const joinGroupByCode = async (req, res) => {
-  try {
-    const { inviteCode } = req.body;
 
-    const group = await Group.findOne({ inviteCode });
-
-    if (!group) {
-      return res.status(404).json({
-        success: false,
-        message: "Invalid Invite Code",
-      });
-    }
-
-    const alreadyMember = group.members.includes(req.user.id);
-
-    if (alreadyMember) {
-      return res.status(400).json({
-        success: false,
-        message: "You are already a member",
-      });
-    }
-
-    group.members.push(req.user.id);
-
-    await group.save();
-
-    res.json({
-      success: true,
-      message: "Joined Group Successfully",
-      group,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 
 module.exports = {
   createGroup,
@@ -335,7 +305,6 @@ module.exports = {
   getGroups,
   getGroupById,
   addMemberByEmail,
-  joinGroupByCode,
   joinByCode,
   leaveGroup,
   deleteGroup,
