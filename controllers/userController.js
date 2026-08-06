@@ -34,16 +34,27 @@ const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
     });
+    // Generate JWT Token
+const token = jwt.sign(
+  {
+    id: user._id,
+  },
+  process.env.JWT_SECRET,
+  {
+    expiresIn: "7d",
+  }
+);  
 
     // Send response
   res.status(201).json({
-    success: true,
-    message: "User Registered Successfully",
-    user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-    },
+  success: true,
+  message: "User Registered Successfully",
+  token,
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+  },
 });
 
   } catch (error) {
