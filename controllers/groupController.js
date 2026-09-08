@@ -258,6 +258,55 @@ const leaveGroup = async (req, res) => {
     });
   }
 };
+// Rename Group
+const renameGroup = async (req, res) => {
+  try {
+    const { groupId, name } = req.body;
+
+    // Check required fields
+    if (!groupId || !name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Group ID and group name are required",
+      });
+    }
+
+    // Find group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // Only owner can rename
+    if (group.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Only group owner can rename this group.",
+      });
+    }
+
+    // Update group name
+    group.name = name.trim();
+
+    await group.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Group renamed successfully.",
+      group,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 const deleteGroup = async (req, res) => {
   try {
     const { groupId } = req.body;
@@ -308,4 +357,5 @@ module.exports = {
   joinByCode,
   leaveGroup,
   deleteGroup,
+  renameGroup,
 };
