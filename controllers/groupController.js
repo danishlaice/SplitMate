@@ -1,6 +1,7 @@
 const Group = require("../models/Group");
 const User = require("../models/User");
 const Expense = require("../models/Expense");
+const Settlement = require("../models/Settlement");
 
 // Create Group
 const createGroup = async (req, res) => {
@@ -330,6 +331,9 @@ const deleteGroup = async (req, res) => {
 
     // Delete all expenses in this group
     await Expense.deleteMany({ group: groupId });
+
+    // Delete all settlements in this group
+    await Settlement.deleteMany({ group: groupId });
 
     // Delete group
     await Group.findByIdAndDelete(groupId);

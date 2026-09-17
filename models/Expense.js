@@ -23,6 +23,14 @@ const expenseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    settledAmount: {
+      type: Number,
+      default: 0,
+    },
+    isSettled: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
