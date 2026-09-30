@@ -7,7 +7,7 @@ const sendEmail = require("../utils/sendEmail");
 const registerUser = async (req, res) => {
   try {
     // Get data from request body
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
 
     // Check if all fields are provided
     if (!name || !email || !password) {
@@ -16,6 +16,10 @@ const registerUser = async (req, res) => {
         message: "Please fill all fields",
       });
     }
+
+    name = name.trim();
+    email = email.trim().toLowerCase();
+    password = password.trim();
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
@@ -70,7 +74,7 @@ const token = jwt.sign(
 // 👇 Login User Function (Paste here)
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     // Check fields
     if (!email || !password) {
@@ -79,6 +83,9 @@ const loginUser = async (req, res) => {
         message: "Please enter email and password",
       });
     }
+
+    email = email.trim().toLowerCase();
+    password = password.trim();
    
 
     // Find user
