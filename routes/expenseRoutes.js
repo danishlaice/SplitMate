@@ -5,6 +5,7 @@ const {
   getGroupExpenses,
   updateExpense,
   deleteExpense,
+  clearAllExpenses,
 } = require("../controllers/expenseController");
 
 const {
@@ -19,6 +20,7 @@ router.post("/add", protect, addExpense);
 router.get("/:groupId", protect, getGroupExpenses);
 router.put("/update/:expenseId", protect, updateExpense);
 router.delete("/delete/:expenseId", protect, deleteExpense);
+router.delete("/clear/:groupId", protect, clearAllExpenses);
 
 router.get("/balance/:groupId", protect, calculateBalance);
 

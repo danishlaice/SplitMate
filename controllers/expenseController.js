@@ -1,5 +1,6 @@
 const Expense = require("../models/Expense");
 const Group = require("../models/Group");
+const Settlement = require("../models/Settlement");
 
 const addExpense = async (req, res) => {
   try {
@@ -201,10 +202,54 @@ const calculateBalance = async (req, res) => {
   }
 };
 
+const clearAllExpenses = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // Check if user is a member or creator of the group
+    const isMember =
+      group.members.some(
+        (memberId) => memberId.toString() === req.user.id.toString()
+      ) || group.createdBy?.toString() === req.user.id.toString();
+
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to clear expenses for this group",
+      });
+    }
+
+    // Delete all expenses belonging to this group
+    await Expense.deleteMany({ group: groupId });
+
+    // Delete any pending (unsettled) settlements for this group
+    await Settlement.deleteMany({ group: groupId, status: "unsettled" });
+
+    res.status(200).json({
+      success: true,
+      message: "All expenses cleared successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   addExpense,
   getGroupExpenses,
   updateExpense,
   deleteExpense,
-  
+  clearAllExpenses,
 };
