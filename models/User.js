@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true,
     },
 
     password: {
@@ -21,12 +20,12 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     resetPasswordToken: {
-  type: String,
-},
+      type: String,
+    },
 
-resetPasswordExpire: {
-  type: Date,
-},
+    resetPasswordExpire: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

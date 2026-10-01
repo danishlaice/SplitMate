@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const bcrypt = require("bcryptjs"); 
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
@@ -7,7 +7,7 @@ const sendEmail = require("../utils/sendEmail");
 const registerUser = async (req, res) => {
   try {
     // Get data from request body
-    let { name, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     // Check if all fields are provided
     if (!name || !email || !password) {
@@ -16,10 +16,6 @@ const registerUser = async (req, res) => {
         message: "Please fill all fields",
       });
     }
-
-    name = name.trim();
-    email = email.trim().toLowerCase();
-    password = password.trim();
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
@@ -41,27 +37,27 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
     });
     // Generate JWT Token
-const token = jwt.sign(
-  {
-    id: user._id,
-  },
-  process.env.JWT_SECRET,
-  {
-    expiresIn: "7d",
-  }
-);  
+    const token = jwt.sign(
+      {
+        id: user._id,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     // Send response
-  res.status(201).json({
-  success: true,
-  message: "User Registered Successfully",
-  token,
-  user: {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-  },
-});
+    res.status(201).json({
+      success: true,
+      message: "User Registered Successfully",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
 
   } catch (error) {
     res.status(500).json({
@@ -74,7 +70,7 @@ const token = jwt.sign(
 // 👇 Login User Function (Paste here)
 const loginUser = async (req, res) => {
   try {
-    let { email, password } = req.body;
+    const { email, password } = req.body;
 
     // Check fields
     if (!email || !password) {
@@ -84,9 +80,6 @@ const loginUser = async (req, res) => {
       });
     }
 
-    email = email.trim().toLowerCase();
-    password = password.trim();
-   
 
     // Find user
     const user = await User.findOne({ email });
@@ -98,8 +91,8 @@ const loginUser = async (req, res) => {
       });
     }
     console.log("Email:", email);
-console.log("Entered Password:", password);
-console.log("Stored Password:", user.password);
+    console.log("Entered Password:", password);
+    console.log("Stored Password:", user.password);
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -123,7 +116,7 @@ console.log("Stored Password:", user.password);
     );
 
     res.status(200).json({
-      success: true,  
+      success: true,
       message: "Login Successful",
       token,
       user: {
@@ -319,5 +312,5 @@ module.exports = {
   getProfile,
   forgotPassword,
   resetPassword,
-  
+
 };
